@@ -14,5 +14,16 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', function () {
-    return view('welcome');
+    return view('product_dashboard');
+});
+
+Route::name('product.')->group(function () {
+  Route::get('product','ProductController@index')->name('index');
+  Route::post('product','ProductController@store')->name('store');
+  Route::get('product/create','ProductController@create')->name('create');
+  Route::get('product/{product}','ProductController@show')->name('show');
+  Route::put('product/{product}','ProductController@update')->name('update');
+  Route::delete('product/{product}','ProductController@destroy')->name('destroy');
+  Route::delete('product/{product}/deshabilitar','ProductController@deshabilitar')->name('deshabilitar');
+  Route::get('product/{product}/edit','ProductController@edit')->name('edit');
 });
