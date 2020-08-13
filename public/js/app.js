@@ -2142,19 +2142,23 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
+//
+//
+//
+//
 /* harmony default export */ __webpack_exports__["default"] = ({
   props: [''],
   data: function data() {
     return {
       products: [],
+      checkedNames: [],
       errors: false,
       openModal: false,
       idEdit: '',
       nameEdit: '',
       descriptionEdit: '',
       precioEdit: '',
-      habilitadoEdit: '',
-      checkedNames: []
+      habilitadoEdit: ''
     };
   },
   mounted: function mounted() {
@@ -2234,6 +2238,63 @@ __webpack_require__.r(__webpack_exports__);
           title: texto
         });
       });
+    },
+    addItem: function addItem(value) {
+      this.checkedNames.push(value);
+    },
+    removeItem: function removeItem(value) {
+      this.checkedNames.splice(this.checkedNames.indexOf(value), 1);
+    },
+    deshabilitar: function deshabilitar() {
+      var _this3 = this;
+
+      Swal.fire({
+        title: 'Eliminacion!',
+        text: "Desea deshabilitar los seleccionados? ",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Deshabilitar!'
+      }).then(function (result) {
+        if (result.value) {
+          var params = {
+            products: _this3.checkedNames
+          };
+          axios.post('product/deshabilitar', params).then(function (response) {
+            Swal.fire({
+              title: 'Correcto!',
+              text: 'Registrado correctamente',
+              icon: 'success'
+            });
+            _this3.checkedNames = [];
+
+            _this3.getProducts();
+          })["catch"](function (error) {
+            var texto = "";
+
+            for (var property in error.response.data.errors) {
+              texto = texto + error.response.data.errors[property] + '\n';
+            }
+
+            var Toast = Swal.mixin({
+              toast: true,
+              position: 'top-end',
+              showConfirmButton: false,
+              timer: 2000,
+              timerProgressBar: true,
+              onOpen: function onOpen(toast) {
+                toast.addEventListener('mouseenter', Swal.stopTimer);
+                toast.addEventListener('mouseleave', Swal.resumeTimer);
+              }
+            });
+            Toast.fire({
+              icon: 'warning',
+              title: texto
+            });
+          });
+        }
+      });
     }
   }
 });
@@ -2262,19 +2323,24 @@ __webpack_require__.r(__webpack_exports__);
 //
 //
 //
-//
 /* harmony default export */ __webpack_exports__["default"] = ({
   props: ['product'],
   data: function data() {
     return {
       editMode: false,
-      checkedNames: []
+      checked: []
     };
   },
   filters: {},
   mounted: function mounted() {},
   watch: {
-    checkedNames: function checkedNames() {}
+    checked: function checked() {
+      if (this.checked == this.product.id) {
+        this.$emit('add', this.product.id);
+      } else {
+        this.$emit('remove', this.product.id);
+      }
+    }
   },
   methods: {
     onClickEdit: function onClickEdit() {
@@ -41377,11 +41443,36 @@ var render = function() {
     "div",
     { staticClass: "col-md-12" },
     [
-      _vm._m(0),
+      _c("h4", { staticClass: "section-title-underline mb-2" }, [
+        _c("span", [_vm._v("Productos")]),
+        _vm._v(" "),
+        _c(
+          "button",
+          {
+            staticClass: "btn btn-primary",
+            attrs: {
+              type: "button",
+              "data-toggle": "modal",
+              "data-target": "#create"
+            }
+          },
+          [_vm._v("\n            Nuevo Producto\n        ")]
+        ),
+        _vm._v(" "),
+        _c(
+          "button",
+          {
+            staticClass: "btn btn-primary",
+            attrs: { type: "button" },
+            on: { click: _vm.deshabilitar }
+          },
+          [_vm._v("\n            Deshabilitar seleccionados\n        ")]
+        )
+      ]),
       _vm._v(" "),
       _c("div", { staticClass: "card-body" }, [
         _c("table", { staticClass: "table table-striped table-hover" }, [
-          _vm._m(1),
+          _vm._m(0),
           _vm._v(" "),
           _c(
             "tbody",
@@ -41390,6 +41481,12 @@ var render = function() {
                 key: product.id,
                 attrs: { product: product },
                 on: {
+                  add: function($event) {
+                    return _vm.addItem.apply(void 0, arguments)
+                  },
+                  remove: function($event) {
+                    return _vm.removeItem.apply(void 0, arguments)
+                  },
                   delete: function($event) {
                     return _vm.deleteProduct(index)
                   },
@@ -41409,8 +41506,6 @@ var render = function() {
           )
         ])
       ]),
-      _vm._v(" "),
-      _c("span", [_vm._v("Checked names: " + _vm._s(_vm.checkedNames))]),
       _vm._v(" "),
       _c(
         "div",
@@ -41636,9 +41731,9 @@ var render = function() {
                       return _c("tr", [
                         _c("div", { staticClass: "alert alert-danger" }, [
                           _vm._v(
-                            "\n                          " +
+                            "\n                        " +
                               _vm._s(error) +
-                              "\n                        "
+                              "\n                      "
                           )
                         ])
                       ])
@@ -41661,29 +41756,10 @@ var staticRenderFns = [
     var _vm = this
     var _h = _vm.$createElement
     var _c = _vm._self._c || _h
-    return _c("h4", { staticClass: "section-title-underline mb-2" }, [
-      _c("span", [_vm._v("Productos")]),
-      _vm._v(" "),
-      _c(
-        "button",
-        {
-          staticClass: "btn btn-primary",
-          attrs: {
-            type: "button",
-            "data-toggle": "modal",
-            "data-target": "#create"
-          }
-        },
-        [_vm._v("\n              Nuevo Producto\n          ")]
-      )
-    ])
-  },
-  function() {
-    var _vm = this
-    var _h = _vm.$createElement
-    var _c = _vm._self._c || _h
     return _c("thead", [
       _c("tr", [
+        _c("th", [_vm._v("Seleccionar")]),
+        _vm._v(" "),
         _c("th", [_vm._v("Nombre")]),
         _vm._v(" "),
         _c("th", [_vm._v("Descripcion")]),
@@ -41723,34 +41799,33 @@ var render = function() {
           {
             name: "model",
             rawName: "v-model",
-            value: _vm.checkedNames,
-            expression: "checkedNames"
+            value: _vm.checked,
+            expression: "checked"
           }
         ],
-        attrs: { type: "checkbox", value: "product.name" },
+        attrs: { type: "checkbox" },
         domProps: {
-          checked: Array.isArray(_vm.checkedNames)
-            ? _vm._i(_vm.checkedNames, "product.name") > -1
-            : _vm.checkedNames
+          value: _vm.product.id,
+          checked: Array.isArray(_vm.checked)
+            ? _vm._i(_vm.checked, _vm.product.id) > -1
+            : _vm.checked
         },
         on: {
           change: function($event) {
-            var $$a = _vm.checkedNames,
+            var $$a = _vm.checked,
               $$el = $event.target,
               $$c = $$el.checked ? true : false
             if (Array.isArray($$a)) {
-              var $$v = "product.name",
+              var $$v = _vm.product.id,
                 $$i = _vm._i($$a, $$v)
               if ($$el.checked) {
-                $$i < 0 && (_vm.checkedNames = $$a.concat([$$v]))
+                $$i < 0 && (_vm.checked = $$a.concat([$$v]))
               } else {
                 $$i > -1 &&
-                  (_vm.checkedNames = $$a
-                    .slice(0, $$i)
-                    .concat($$a.slice($$i + 1)))
+                  (_vm.checked = $$a.slice(0, $$i).concat($$a.slice($$i + 1)))
               }
             } else {
-              _vm.checkedNames = $$c
+              _vm.checked = $$c
             }
           }
         }
@@ -41773,9 +41848,7 @@ var render = function() {
         staticClass: "btn btn-danger fas fa-trash-alt",
         on: { click: _vm.onClickDelete }
       })
-    ]),
-    _vm._v(" "),
-    _c("span", [_vm._v("Checked names: " + _vm._s(_vm.checkedNames))])
+    ])
   ])
 }
 var staticRenderFns = []

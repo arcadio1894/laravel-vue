@@ -26,4 +26,5 @@ Route::name('product.')->group(function () {
   Route::delete('product/{product}','ProductController@destroy')->name('destroy');
   Route::delete('product/{product}/deshabilitar','ProductController@deshabilitar')->name('deshabilitar');
   Route::get('product/{product}/edit','ProductController@edit')->name('edit');
+  Route::post('product/deshabilitar','ProductController@deshabilitar');
 });

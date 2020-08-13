@@ -1,5 +1,6 @@
 <template>
     <tr>
+      <td><input type="checkbox" v-bind:value="product.id" v-model="checked"></td>
       <td>{{product.name}}</td>
       <td>{{product.descripcion}}</td>
       <td>{{formatPrice(product.precio)}}</td>
@@ -7,7 +8,6 @@
         <i class="btn btn-warning fas fa-pencil-alt" v-on:click="onClickEdit""></i>
         <i class="btn btn-danger fas fa-trash-alt" v-on:click="onClickDelete""></i>
       </td>
-      <span>Checked names: {{ checkedNames }}</span>
     </tr>
 </template>
 
@@ -17,7 +17,7 @@
         data() {
             return {
               editMode: false,
-              checkedNames: []
+              checked: [],
             }
         },
         filters: {
@@ -26,9 +26,14 @@
         mounted() {
 
         },
-        watch:{
-          checkedNames:function(){
-
+        watch: {
+          checked: function(){
+            if(this.checked == this.product.id)
+            {
+              this.$emit('add', this.product.id);
+            }else{
+              this.$emit('remove', this.product.id);
+            }
           }
         },
         methods:{

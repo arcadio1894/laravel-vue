@@ -5,11 +5,15 @@
             <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#create">
                 Nuevo Producto
             </button>
+            <button type="button" class="btn btn-primary" @click="deshabilitar">
+                Deshabilitar seleccionados
+            </button>
         </h4>
         <div class="card-body">
             <table class="table table-striped table-hover">
               <thead>
                 <tr>
+                  <th>Seleccionar</th>
                   <th>Nombre</th>
                   <th>Descripcion</th>
                   <th>Precio</th>
@@ -19,13 +23,14 @@
               <tbody>
                   <product-component v-for="(product, index) in products" v-bind:key="product.id"
                       v-bind:product="product"
+                      v-on:add="addItem(...arguments)"
+                      v-on:remove="removeItem(...arguments)"
                       v-on:delete="deleteProduct(index)"
                       v-on:modal="showModal(index, ...arguments)">
                   </product-component>
               </tbody>
             </table>
-        </div>
-
+        </div >
 
         <div class="modal fade" id="edit" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true" data-keyboard="false" data-backdrop="static">
           <div class="modal-dialog modal-md">
@@ -87,6 +92,7 @@
         data() {
             return {
               products:[],
+              checkedNames: [],
               errors:false,
               openModal:false,
               idEdit:'',
@@ -168,6 +174,58 @@
                       title : texto
                   })
               });
+          },
+          addItem(value){
+            this.checkedNames.push(value);
+          },
+          removeItem(value){
+            this.checkedNames.splice(this.checkedNames.indexOf(value),1);
+          },
+          deshabilitar(){
+            Swal.fire({
+              title: 'Eliminacion!',
+              text: "Desea deshabilitar los seleccionados? ",
+              icon: 'warning',
+              showCancelButton: true,
+              confirmButtonColor: '#3085d6',
+              cancelButtonColor: '#d33',
+              confirmButtonText: 'Deshabilitar!'
+            }).then((result) => {
+              if (result.value) {
+                  const params = {
+                      products:this.checkedNames,
+                  };
+                  axios.post('product/deshabilitar',params).then(response => {
+                    Swal.fire({
+                        title: 'Correcto!',
+                        text: 'Registrado correctamente',
+                        icon: 'success'
+                    })
+                    this.checkedNames= [];
+                    this.getProducts();
+                  }).catch(error =>{
+                      var texto="";
+                      for (var property in error.response.data.errors){
+                          texto = texto + error.response.data.errors[property]+'\n';
+                      }
+                      const Toast = Swal.mixin({
+                          toast: true,
+                          position: 'top-end',
+                          showConfirmButton: false,
+                          timer: 2000,
+                          timerProgressBar: true,
+                          onOpen: (toast) => {
+                              toast.addEventListener('mouseenter', Swal.stopTimer)
+                              toast.addEventListener('mouseleave', Swal.resumeTimer)
+                          }
+                      });
+                      Toast.fire({
+                          icon: 'warning',
+                          title : texto
+                      })
+                  });
+              }
+            })
           }
         }
     }

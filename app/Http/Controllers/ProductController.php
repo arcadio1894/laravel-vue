@@ -7,7 +7,7 @@ use Illuminate\Http\Request;
 
 use App\Http\Requests\StoreProduct;
 use App\Http\Requests\UpdateProduct;
-use App\Http\Requests\DeleteProduct;
+use App\Http\Requests\DeshabilitarProduct;
 
 class ProductController extends Controller
 {
@@ -73,10 +73,13 @@ class ProductController extends Controller
      * @param  \App\Product  $product
      * @return \Illuminate\Http\Response
      */
-    public function deshabilitar(DeleteProduct $request)
+    public function deshabilitar(DeshabilitarProduct $request)
     {
-        $product = Product::findOrFail($id);
-        $product->habilitado = 0;
-        $product->save();
+        for ($i = 0; $i < count($request->input('products')); $i++) {
+          $product = Product::find($request->input('products.'.$i));
+          $product->habilitado = 0;
+          $product->save();
+        }
+
     }
 }
